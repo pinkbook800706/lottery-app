@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>孩子抽獎程式</title>
+  <style>
+    body {
+      font-family: "Arial", sans-serif;
+      background-color: #f8f3f3;
+      text-align: center;
+      padding: 20px;
+    }
+    .task-list, .reward-box, .history-box {
+      background: #fff;
+      padding: 15px;
+      margin: 10px auto;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+    }
+    .task-list input {
+      margin-right: 10px;
+    }
+    .draw-button {
+      padding: 10px 20px;
+      font-size: 16px;
+      color: white;
+      background: #ff6384;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎨 地縛少年花子君風格抽獎程式 🎨</h1>
+  <div class="task-list">
+    <h3>📋 任務清單</h3>
+    <div id="tasks"></div>
+  </div>
+  <button class="draw-button" onclick="startDraw()">🎟 抽獎！</button>
+  <div class="reward-box">
+    <h3>🎁 抽獎結果</h3>
+    <p id="reward-result">尚未抽獎</p>
+  </div>
+  <div class="history-box">
+    <h3>📜 抽獎紀錄</h3>
+    <ul id="history"></ul>
+  </div>
+  <script>
+    const rewards = [
+      { name: "用手機30分鐘", probability: 5 },
+      { name: "用手機60分鐘", probability: 1 },
+      { name: "用手機90分鐘", probability: 0.5 },
+      { name: "零用錢$10元", probability: 20 },
+      { name: "零用錢$20元", probability: 10 },
+      { name: "零用錢$50元", probability: 5 },
+      { name: "零用錢$100元", probability: 0.5 },
+      { name: "看電視30分鐘", probability: 20 },
+      { name: "看電視60分鐘", probability: 10 },
+      { name: "點心/飲料券($單價100內)", probability: 10 },
+      { name: "豪華大餐", probability: 5 },
+      { name: "多抽一次", probability: 5 },
+      { name: "下次加油", probability: 5 }
+    ];
+
+    const tasks = [
+      "準時7點吃早餐",
+      "倒垃圾",
+      "洗餐具(學校便當盒)",
+      "洗餐具(家人晚餐使用)",
+      "廁所保持整潔",
+      "房間保持整潔",
+      "媽咪特權券",
+      "爸比特權券",
+      "主動告知聯絡簿簽名"
+    ];
+    
+    let completedTasks = [];
+    
+    function renderTasks() {
+      const taskContainer = document.getElementById("tasks");
+      taskContainer.innerHTML = "";
+      tasks.forEach(task => {
+        const div = document.createElement("div");
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.onchange = () => toggleTask(task);
+        div.appendChild(checkbox);
+        div.appendChild(document.createTextNode(task));
+        taskContainer.appendChild(div);
+      });
+    }
+    
+    function toggleTask(task) {
+      if (completedTasks.includes(task)) {
+        completedTasks = completedTasks.filter(t => t !== task);
+      } else {
+        completedTasks.push(task);
+      }
+    }
+    
+    function calculateDraws() {
+      let count = completedTasks.length;
+      return count >= 5 ? 1 + (count - 5) : 0;
+    }
+    
+    function drawReward() {
+      const random = Math.random() * 100;
+      let cumulativeProbability = 0;
+      for (let reward of rewards) {
+        cumulativeProbability += reward.probability;
+        if (random < cumulativeProbability) {
+          return reward.name;
+        }
+      }
+      return "未抽中，請再試一次！";
+    }
+    
+    function startDraw() {
+      const draws = calculateDraws();
+      if (draws <= 0) {
+        alert("需要至少完成5項任務才能抽獎！");
+        return;
+      }
+      let resultText = "";
+      let drawTime = new Date().toLocaleString();
+      for (let i = 0; i < draws; i++) {
+        let reward = drawReward();
+        resultText += `🎁 ${reward}\n`;
+        document.getElementById("history").innerHTML += `<li>${drawTime} - ${reward}</li>`;
+      }
+      document.getElementById("reward-result").innerText = resultText;
+    }
+    
+    function scheduleReminder() {
+      let now = new Date();
+      let ninePM = new Date();
+      ninePM.setHours(21, 0, 0, 0);
+      if (now > ninePM) {
+        ninePM.setDate(ninePM.getDate() + 1);
+      }
+      let timeUntilReminder = ninePM - now;
+      setTimeout(() => {
+        alert("⏰ 抽獎時間到！快來試試運氣吧！");
+        scheduleReminder();
+      }, timeUntilReminder);
+    }
+    
+    scheduleReminder();
+    renderTasks();
+  </script>
+</body>
+</html>
